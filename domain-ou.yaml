@@ -1,0 +1,23 @@
+---
+- name: Join Windows computer to AD domain
+  hosts: windows_host
+  vars:
+    domain_name: example
+    domain_user: example\\username
+    domain_password: example
+    ou_path: "OU=example,OU=servers,DC=ad,DC=example,DC=example"
+
+  tasks:
+    - name: Install PowerShell modules for joining domain
+      win_chocolatey:
+        name: PowerShell
+        state: present
+
+    - name: Join computer to AD domain
+      win_domain_membership:
+        hostname: "{{ ansible_hostname }}"
+        username: "{{ domain_user }}"
+        password: "{{ domain_password }}"
+        domain_name: "{{ domain_name }}"
+        ou_path: "{{ ou_path }}"
+        state: domain
