@@ -1,23 +1,25 @@
 ---
-- name: Join Windows computer to AD domain
-  hosts: windows_host
+- name: Join Windows Machine to Domain
+  hosts: windows
   vars:
-    domain_name: example
-    domain_user: example\\username
-    domain_password: example
-    ou_path: "OU=example,OU=servers,DC=ad,DC=example,DC=example"
-
+    domain_name: "your_domain_name"
+    domain_admin_username: "your_admin_username"
+    domain_admin_password: "your_admin_password"
   tasks:
-    - name: Install PowerShell modules for joining domain
-      win_chocolatey:
-        name: PowerShell
-        state: present
+    - name: Install Powershell Module for Domain Join
+      win_shell: Install-Module -Name PSWindowsUpdate -Force -SkipPublisherCheck
+      become: yes
 
-    - name: Join computer to AD domain
+    - name: Join Domain
       win_domain_membership:
-        hostname: "{{ ansible_hostname }}"
-        username: "{{ domain_user }}"
-        password: "{{ domain_password }}"
-        domain_name: "{{ domain_name }}"
-        ou_path: "{{ ou_path }}"
-        state: domain
+        dns_domain_name: "{{ domain_name }}"
+        domain_admin_user: "{{ domain_name }}\\{{ domain_admin_username }}"
+        domain_admin_password: "{{ domain_admin_password }}"
+      become: yes
+
+    - name: Restart Machine
+      win_reboot:
+        reboot_timeout: 120
+        reboot_msg: "Joining the Domain, the machine will reboot in 120 seconds."
+      become: yes
+
